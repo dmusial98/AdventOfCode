@@ -5,6 +5,17 @@
 
 constexpr int size = 400;
 
+bool in_array(int tab[], int element) {
+
+	for (int i = 0; i < 100; i++)
+		if (tab[i] == element)
+			return true;
+
+	return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
 int main() {
 
 	std::fstream file;
@@ -34,7 +45,7 @@ int main() {
 	value = 1;
 	int matrix[size][size]{ 0 };
 
-	for (int i = 0; i < index_letter - 1; i++) {
+	for (int i = 0; i < index_letter; i++) {
 
 		matrix[data[i][0]][data[i][1]] = value;	
 		value++;
@@ -48,52 +59,98 @@ int main() {
 	for (int i = 0; i < size; i++) {
 		for (int j = 0; j < size; j++) { 
 
-
-			if (matrix[i-1][j-1] == 0) {
-
-				for (int h = 0; h < index_letter - 1; h++) { //find all letters
-					
+			if (matrix[i][j] == 0) {
 					for (int a = 0; a < size; a++) {
 						for (int b = 0; b < size; b++) { 
-							if (matrix[a][b] == value) { //find value of letter
+
+							if (matrix[a][b] > 0) { //find letter
 								x_dist = abs(i - a);
 								y_dist = abs(j - b);
 
 								if ((x_dist + y_dist) < minimal_dist) {
 									minimal_dist = x_dist + y_dist;   //new minimal distance
-									write_value = -value;
+									write_value = -matrix[a][b];
 									repetition = false;
 								}
 								else if ((x_dist + y_dist) == minimal_dist) repetition = true;
-							
-								value++;
 							}
 							else continue;
+							
 						}
 					}
-				}
+				
 				if (repetition) {
 					matrix[i][j] = 0;
 				}
 				else {
 					matrix[i][j] = write_value;
 					write_value = 0;
-					value = 1;
 				}
 				repetition = false;
+				minimal_dist = 1000;
 			}
 		}
 	}
 
-	
+	int edge_numbers[100]{ 0 };
+	int index = 0;
 
 	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
-			std::cout << matrix[i][j];
+		if (!in_array(edge_numbers, matrix[0][i])){
+		edge_numbers[index] = matrix[0][i];
+		index++;
+	}
 		}
-		std::cout << std::endl;
+
+
+	for (int i = 0; i < size; i++) {
+		if (!in_array(edge_numbers, matrix[size - 1][i])) {
+			edge_numbers[index] = matrix[size - 1][i];
+			index++;
+		}
 	}
 
+	for (int i = 0; i < size; i++) {
+		if (!in_array(edge_numbers, matrix[i][0])) {
+			edge_numbers[index] = matrix[i][0];
+			index++;
+		}
+	}
+
+	for (int i = 0; i < size; i++) {
+		if (!in_array(edge_numbers, matrix[i][size - 1])) {
+			edge_numbers[index] = matrix[i][size - 1];
+			index++;
+		}
+	}		// find number (letter) with infinitive number of appearing
+
+	
+
+	int clos_field_num = 0;
+	int temp_num = 0;
+	int most_clos_value = 0;
+	int actual_number = -1;
+	value = -1;
+
+	for (int i = 0; i < index_letter; i++) {
+		for (int a = 0; a < size; a++) {
+			for (int b = 0; b < size; b++) {
+				if (matrix[a][b] == value) {
+					temp_num++;
+				}
+			}
+		}
+
+		if (temp_num > clos_field_num && !in_array(edge_numbers, actual_number)) {
+			clos_field_num = temp_num;
+			most_clos_value = value;
+		}
+		temp_num = 0;
+		value--;
+		actual_number = value;
+	} //find the number of appearing letters(numbers) without infinity
 
 
+	std::cout << "\nMaximal number of closest elements: " << clos_field_num +1;
+	std::cout << "\nAnd the number is " << most_clos_value;
 }
