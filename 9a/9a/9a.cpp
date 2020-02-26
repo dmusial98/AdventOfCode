@@ -62,5 +62,3 @@ int main() {
 
 	std::cout << highest_score;
 	}
-
-//56 minut wykonywania xD
