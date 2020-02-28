@@ -197,20 +197,10 @@ int main()
 		}
 	}
 
-	/*int max_x = -1000000000;
-	int min_x = 1000000000;
-	int max_y = -1000000000;
-	int min_y = 1000000000;
-
-	find_max_and_min(max_x, min_x, max_y, min_y, lights);*/
-
 	char* sky_array[max_array_size];
 
 	for (int i = 0; i < max_array_size; i++)
 		sky_array[i] = new char[max_array_size]; //creating array for lights
-
-	
-
 	
 	clean_sky_array(sky_array);
 
