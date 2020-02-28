@@ -111,7 +111,9 @@ int main() {
 		else act_player++;
 	}
 
+	//Result *highest_score = new Result();
 	unsigned long long int highest_score = 0;
+
 
 	for (int i = 0; i < num_of_players; i++) {
 		if (players[i] > highest_score) {
