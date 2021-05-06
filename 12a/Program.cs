@@ -1,78 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace _12a
 {
-    public class Pot
-    {
-        public int Index { get; set; }
-        public char Content { get; set; }
-        public int Generation { get; }
-
-        public Pot(int index, char content, int generation)
-        {
-            Index = index;
-            Content = content;
-            Generation = generation;
-        }
-    }
-
-    public class Rule
-    {
-        public string RuleString { get; set; }
-        public char FarLeft { get; set; }
-        public char NearLeft { get; set; }
-        public char Current { get; set; }
-        public char NearRight { get; set; }
-        public char FarRight { get; set; }
-        public char Prediction { get; set; }
-
-        public Rule(string ruleString)
-        {
-            RuleString = ruleString;
-
-            FarLeft = RuleString[0];
-            NearLeft = RuleString[1];
-            Current = RuleString[2];
-            NearRight = RuleString[3];
-            FarRight = RuleString[4];
-            Prediction = RuleString[9];
-        }
-
-    }
-
-
     class Program
     {
-        const long GenerationNumberConst = 50000000000;
-        static int GenerationNumber = 1;
+        static long epoch = 0, firstIndex = 0, lastIndex = 0;
+        static int indexOfCurrentEpochString = 0, indexOfLastEpochString = 1;
+        static String[] epochsStrings = new String[2] {"", "" };
+        const long epochsNumber = 50000000000;
 
-        static List<List<Pot>> PotsList = new List<List<Pot>>();
-        static List<Rule> RulesList = new List<Rule>();
-
-        static void ReadFile()
+        static List<String> ReadFile()
         {
-            System.IO.StreamReader file;
-            string line;
+            System.IO.StreamReader file = null;
+            String line;
+            List<String> dataList = new List<String>();
+
             try
             {
                 file = new System.IO.StreamReader("input.txt");
 
                 if (!String.IsNullOrEmpty(line = file.ReadLine())) //read first line with initial state
                 {
-                    PotsList.Add(new List<Pot>());
-
-                    int index = -5;
-                    for (; index < 0; index++)
-                        PotsList[0].Add(new Pot(index, '.', 0));
-                    foreach (char pot in line)
-                        PotsList[0].Add(new Pot(index++, pot, 0)); //making structure with initial state
-                    for (int i = 0; i < 30; i++)
-                        PotsList[0].Add(new Pot(index + i, '.', 0));
+                    dataList.Add(line);
                 }
 
                 while (!String.IsNullOrEmpty(line = file.ReadLine()) && line.Length == 10) //reading rules
-                    RulesList.Add(new Rule(line));
+                    dataList.Add(line);
             }
             catch (Exception e)
             {
@@ -80,124 +35,80 @@ namespace _12a
             }
             finally
             {
-                //if(file != null)
-                //    file.Close();
+                if (file != null)
+                    file.Close();
             }
+
+            return dataList;
         }
 
-        static void Display()
+        static void DoOneGeneration(List<string> rules)
         {
-            int maxIndex = -2;
-
-            for (int i = 0; i < PotsList.Count; i++)
-                if (maxIndex < PotsList[i][PotsList[i].Count - 1].Index)
-                    maxIndex = PotsList[i][PotsList[i].Count - 1].Index;
-
-            for (int rowIndex = 0; rowIndex < 3; rowIndex++) //display columns with numbers of pots
+            StringBuilder currentEpochString = new StringBuilder(epochsStrings[indexOfCurrentEpochString]);
+            StringBuilder lastEpochString = new StringBuilder(epochsStrings[indexOfLastEpochString]);
+            int stringLength = currentEpochString.Length;
+            
+            for (int i = 0; i < stringLength; i++)
             {
-                Console.Write("        ");
+                string pots;
+                if (i == 0) //TODO: przerobić na switch'a
+                    pots = ".." + currentEpochString.ToString().Substring(0, 3);
+                else if (i == 1)
+                    pots = "." + currentEpochString.ToString().Substring(0, 4);
+                else if (i == stringLength - 2)
+                    pots = currentEpochString.ToString().Substring(i, 4) + ".";
+                else if (i == stringLength - 1)
+                    pots = currentEpochString.ToString().Substring(i, 3) + "..";
+                else
+                    pots = currentEpochString.ToString().Substring(i, 5);
 
-                for (int columnIndex = 0; columnIndex <= maxIndex; columnIndex += 5)
-                {
-                    int hundredsDigit = columnIndex / 100;
-                    int tensDigit = columnIndex % 100 / 10;
-                    int unitsDigit = columnIndex % 10;
 
-                    if (rowIndex == 0)
+                int ruleIndex = 0;
+                while (rules[ruleIndex].Substring(0, 5) != pots) //search index of rule
+                    ruleIndex++;
+                try
+                { //skonczyc to szukanie i wstawianie
+                    if (rules[ruleIndex][9] == '.')
+                        lastEpochString[i] = '.';
+                    else
                     {
-                        if (hundredsDigit == 0)
-                            Console.Write(" ");
-                        else
-                            Console.Write(hundredsDigit);
-                    }
-                    else if (rowIndex == 1)
-                    {
-                        if (tensDigit != 0 || (hundredsDigit != 0 && tensDigit == 0))
-                            Console.Write(tensDigit);
-                        else
-                            Console.Write(" ");
-                    }
-                    else if (rowIndex == 2)
-                        Console.Write(unitsDigit);
+                        if(i == 0 || i == 1 || i == stringLength - 2 || i == stringLength - 1)
+                        {
 
-                    Console.Write("    ");
+                        }
+                    }
+                
                 }
-                Console.Write("\n");
-            }
-
-            bool generationDisplayed = false;
-            foreach (List<Pot> potList in PotsList) //display pots with plants
-            {
-                foreach (Pot pot in potList)
+                catch(ArgumentOutOfRangeException e)
                 {
-                    if (!generationDisplayed)
-                    {
-                        if (pot.Generation < 10)
-                            Console.Write(" {0}:", pot.Generation);
-                        else
-                            Console.Write("{0}:", pot.Generation);
-
-                        generationDisplayed = true;
-                    }
-                    Console.Write(pot.Content);
-                }
-                generationDisplayed = false;
-                Console.Write("\n");
-            }
-
-        }
-
-        static void DoOneGeneration()
-        {
-            PotsList.Add(new List<Pot>());
-            PotsList[PotsList.Count - 1].Add(new Pot(-5, '.', GenerationNumber));
-            PotsList[PotsList.Count - 1].Add(new Pot(-4, '.', GenerationNumber));
-
-            for (int potIndex = 2; potIndex < PotsList[0].Count - 2; potIndex++)
-            {
-                char farLeft = PotsList[PotsList.Count - 2][potIndex - 2].Content;
-                char nearLeft = PotsList[PotsList.Count - 2][potIndex - 1].Content;
-                char current = PotsList[PotsList.Count - 2][potIndex].Content;
-                char nearRight = PotsList[PotsList.Count - 2][potIndex + 1].Content;
-                char farRight = PotsList[PotsList.Count - 2][potIndex + 2].Content;
-
-                bool wasRule = false;
-
-                foreach (Rule rule in RulesList)
-                {
-                    if (farLeft == rule.FarLeft && nearLeft == rule.NearLeft && current == rule.Current && nearRight == rule.NearRight && farRight == rule.FarRight)
-                    {
-                        PotsList[PotsList.Count - 1].Add(new Pot(potIndex - 5, rule.Prediction, GenerationNumber));
-                        wasRule = true;
-                        break;
-                    }
+                    Console.WriteLine("rule index out of range");
                 }
 
-                if(!wasRule)
-                    PotsList[PotsList.Count - 1].Add(new Pot(potIndex - 5, '.', GenerationNumber));
+
             }
-            PotsList[PotsList.Count - 1].Add(new Pot(PotsList[PotsList.Count - 1][PotsList[PotsList.Count - 1].Count - 1].Index + 1, '.', GenerationNumber));
-            PotsList[PotsList.Count - 1].Add(new Pot(PotsList[PotsList.Count - 1][PotsList[PotsList.Count - 1].Count - 1].Index + 2, '.', GenerationNumber));
+
+            indexOfCurrentEpochString = indexOfCurrentEpochString == 0 ? 1 : 0;
+            indexOfLastEpochString = indexOfCurrentEpochString == 0 ? 0 : 1;
+            epoch++;
 
 
-            GenerationNumber++;
+
         }
 
         static void Main(string[] args)
         {
-            ReadFile();
+            List<String> dataFromFile = ReadFile();
+            epochsStrings[0] = dataFromFile[0]; //plants in 0 epoch
+            dataFromFile.RemoveAt(0);
+            lastIndex = epochsStrings[0].Length - 1;
 
-            for (int generationIndex = 0; generationIndex < GenerationNumberConst; generationIndex++)
-                DoOneGeneration();
 
-            Display();
+            //int sumOFIndexes = 0;
+            //foreach (Pot pot in PotsList[PotsList.Count - 1])
+            //    if (pot.Content == '#')
+            //        sumOFIndexes += pot.Index;
 
-            int sumOFIndexes = 0;
-            foreach (Pot pot in PotsList[PotsList.Count - 1])
-                if (pot.Content == '#')
-                    sumOFIndexes += pot.Index;
-
-            Console.WriteLine("\n\nNumber of plants: {0}", sumOFIndexes);
+            //Console.WriteLine("\n\nNumber of plants: {0}", sumOFIndexes);
 
             Console.ReadKey();
         }
